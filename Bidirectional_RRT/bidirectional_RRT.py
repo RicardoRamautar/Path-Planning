@@ -15,8 +15,8 @@ import sys
 from scipy.interpolate import splprep, splev
 from variables import RAD_QUAD, RAD_OBST, RAD_NP, RAD_NBR, ENVIRONMENT
 
-desired_directory = "/home/rdramautar/Documents/gym_test/gym-pybullet-drones"
-sys.path.append(desired_directory)
+# desired_directory = "/home/rdramautar/Documents/gym_test/gym-pybullet-drones"
+# sys.path.append(desired_directory)
 
 from CtrlBRRT import CtrlBRRT
 from gym_pybullet_drones.utils.enums import DroneModel, Physics
