@@ -405,7 +405,7 @@ INIT_XYZS = np.array([waypoints[0]])
 INIT_RPYS = np.array([[0,0,0]])
 
 totPathLen = calcTotalPathLength(waypoints)
-WAYPOINTS = generate_waypoints2(waypoints, 0.004)
+WAYPOINTS = generate_waypoints2(waypoints, 0.003)
 NUM_WP = len(WAYPOINTS)
 # NUM_WP = int(totPathLen // 0.006)
 PERIOD = NUM_WP // control_freq_hz
@@ -523,7 +523,7 @@ def run(
 
     #### Save the simulation results ###########################
     logger.save()
-    logger.save_as_csv("pid") # Optional CSV save
+    # logger.save_as_csv("pid") # Optional CSV save
 
     #### Plot the simulation results ###########################
     if plot:
