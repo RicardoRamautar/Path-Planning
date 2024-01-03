@@ -1,4 +1,6 @@
 *
 !.gitignore
+!Bidirectional_RRT/
 !Bidirectional_RRT/*
+!RRT_star/
 !RRT_star/*
