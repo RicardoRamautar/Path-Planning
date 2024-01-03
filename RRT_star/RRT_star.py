@@ -377,13 +377,12 @@ states = RRT()
 end_time = time.time()
 print("Runtime: ", end_time - start_time)
 
-plotTrees(states, [])
+# plotTrees(states, [])
 
 path = findShortestPath(states)
 
 plotTrees(states, path)
 
-# path = generatePath()
 print(path)
 waypoints = np.array([[path[i][0], path[i][1], path[i][2]] for i in range(len(path))])
 waypoints = path
@@ -392,12 +391,13 @@ INIT_XYZS = np.array([waypoints[0]])
 INIT_RPYS = np.array([[0,0,0]])
 
 totPathLen = calcTotalPathLength(waypoints)
-NUM_WP = int(totPathLen // 0.006)
+# NUM_WP = int(totPathLen // 0.006)
+NUM_WP = int(totPathLen // 0.004)
 PERIOD = NUM_WP // control_freq_hz
 DEFAULT_DURATION_SEC = PERIOD
 
-# WAYPOINTS = generate_waypoints(waypoints, NUM_WP//num_edges)
-WAYPOINTS = smoothenPath(path, NUM_WP)
+WAYPOINTS = generate_waypoints(waypoints, NUM_WP//num_edges)
+# WAYPOINTS = smoothenPath(path, NUM_WP)
 TARGET_POS = WAYPOINTS
 wp_counters = np.array([int((i*NUM_WP/6)%NUM_WP) for i in range(num_drones)])
 
