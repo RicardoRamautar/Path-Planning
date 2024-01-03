@@ -405,7 +405,7 @@ INIT_XYZS = np.array([waypoints[0]])
 INIT_RPYS = np.array([[0,0,0]])
 
 totPathLen = calcTotalPathLength(waypoints)
-WAYPOINTS = generate_waypoints2(waypoints, 0.003)
+WAYPOINTS = generate_waypoints2(waypoints, 0.006)
 NUM_WP = len(WAYPOINTS)
 # NUM_WP = int(totPathLen // 0.006)
 PERIOD = NUM_WP // control_freq_hz
@@ -478,8 +478,8 @@ def run(
     camera_yaw = 0
     camera_pitch = 30
 
-    prev_point = WAYPOINTS[0]
-    for point in WAYPOINTS[1:]:
+    prev_point = waypoints[0]
+    for point in waypoints[1:]:
         line_id = p.addUserDebugLine(lineFromXYZ=prev_point, lineToXYZ=point, lineColorRGB=[1, 0, 0], physicsClientId=PYB_CLIENT)
         prev_point = point
 
