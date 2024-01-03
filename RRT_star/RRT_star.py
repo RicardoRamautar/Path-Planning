@@ -299,11 +299,21 @@ def findShortestPath(tree):
             nearest_node = node
 
     while nearest_node.getTupleCoordinates() == nearest_node.predecessor.getTupleCoordinates():
+        print("You cannot remove this code!")
         nearest_node = nearest_node.predecessor
-    
-    return returnPartialPath(nearest_node, START_POINT)
 
-def RRT(N = 700):
+    if not (nearest_node.getTupleCoordinates() == END_POINT):
+        assert collisionCheck(np.array(list(END_POINT)), nearest_node.getNpCoordinates()), "NO PATH FROM START TO END  COULD BE FOUND!"
+        min_path_length = nearest_node.min_path_length + euclideanDistance(END_POINT, nearest_node.getTupleCoordinates())
+        new_node = Vertex(END_POINT, nearest_node, min_path_length)
+        tree[END_POINT] = Vertex(END_POINT, nearest_node, min_path_length)
+        return returnPartialPath(new_node, START_POINT)
+    else:
+        return returnPartialPath(nearest_node, START_POINT)
+    
+    # return returnPartialPath(nearest_node, START_POINT)
+
+def RRT(N = 1100):
     tree = {START_POINT: Vertex(START_POINT)}
 
     for i in range(N):
