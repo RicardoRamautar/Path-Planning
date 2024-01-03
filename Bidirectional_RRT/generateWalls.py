@@ -2,7 +2,8 @@ import random
 import time
 import json
 import os
-from variables import RAD_SPHERE
+# from variables import RAD_SPHERE
+RAD_SPHERE = 0.12
 
 def createWall(width, height, radius, y):
     time.sleep(0.1)
@@ -38,7 +39,7 @@ width = 10
 height = 10
 
 # Number of consecutive walls
-nr = 5
+nr = 3
 
 # spacing between consecutive walls
 spacing_walls = 4
@@ -54,7 +55,7 @@ end_position = [removed_positions[-1][0], removed_positions[-1][1] + 1, removed_
 
 x_bounds = [0,width*2*radius-radius]
 y_bounds = [-2,nr*spacing_walls]
-z_bounds = [0,height*2*radius-radius]
+z_bounds = [0.1,height*2*radius-radius]
 
 data = {'obstacles': sphere_positions,
         'start': start_position,

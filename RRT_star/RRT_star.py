@@ -277,9 +277,6 @@ def updateNeighbours(neighbours, new_node, tree):
             tree[nbr_position].min_path_length = new_node.min_path_length + edge_length
                     
 def returnPartialPath(node, end, depth=0):
-    if node == node.predecessor:
-        print("Node has itself as predecessor!")
-
     if node.getTupleCoordinates() == end:
         return [end]
     

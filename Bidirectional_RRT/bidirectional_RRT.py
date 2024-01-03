@@ -15,9 +15,6 @@ import sys
 from scipy.interpolate import splprep, splev
 from variables import RAD_QUAD, RAD_OBST, RAD_NP, RAD_NBR, ENVIRONMENT
 
-# desired_directory = "/home/rdramautar/Documents/gym_test/gym-pybullet-drones"
-# sys.path.append(desired_directory)
-
 from CtrlBRRT import CtrlBRRT
 from gym_pybullet_drones.utils.enums import DroneModel, Physics
 from gym_pybullet_drones.control.DSLPIDControl import DSLPIDControl
@@ -40,13 +37,7 @@ DEFAULT_COLAB = False
 plot_trajectory = True
 
 ######### LOAD MAP #########
-# current_file_directory = os.path.dirname(os.path.abspath(__file__))
-
-# load_maze = current_file_directory + '/maze.json'
-# load_walls = current_file_directory + '/walls.json'
-
 f = open(ENVIRONMENT)
-# f = open(load_maze)
 data = json.load(f)
 SPHERES = data['obstacles']
 start_point = data['start']
@@ -57,9 +48,6 @@ START_POINT = tuple(start_point)
 END_POINT = tuple(end_point)
 
 N = 700                     # Number of iterations
-# X_BOUNDS = [0,10]           # x bounds of random points
-# Y_BOUNDS = [0,20]           # y bounds of random points
-# Z_BOUNDS = [0.1,6]          # z bounds of random points
 X_BOUNDS = data['xbounds']
 Y_BOUNDS = data['ybounds']
 Z_BOUNDS = data['zbounds']
@@ -67,11 +55,6 @@ Z_BOUNDS = data['zbounds']
 MIN_DIST_TREE_CONNECT = 1.5
 TREE_CONVERGENCE = False
 DIST_TREE_CONVERGENCE = 2       # Distance between trees after which bidirectionality turns off
-# RAD_QUAD = 0.1                  # Radius of quadcopter
-# RAD_OBST = 0.15 + RAD_QUAD       # Radius of obstacle, accounting for quadcopter size
-# RAD_NP = 1                      # Radius of new point
-# RAD_NBR = 1.5                   # Radius of neighbour
-# assert RAD_NP < RAD_NBR, "rad_np may never be greater than rad_nbr!"
 
 ######### KD-tree #########
 class kdtree:
@@ -222,31 +205,21 @@ def findNearestNode(random_point, tree):
             min_dist = dist
         
     return nearest_node
-
-# def findNewPoint(random_point, nearest_node):
-#     pos_nearest_node = nearest_node.getNpCoordinates()
-
-#     dist = euclideanDistance(random_point, pos_nearest_node)
-#     t = RAD_NP / dist
-#     new_point = pos_nearest_node.T + t*(random_point.T - pos_nearest_node.T)
-
-#     if new_point[2] < 0.1:
-#         new_point[2] = 0.1
     
-#     return new_point
-
 def findNewPoint(random_point, nearest_node):
     pos_nearest_node = nearest_node.getNpCoordinates()
 
     dist = euclideanDistance(random_point, pos_nearest_node)
-    t = RAD_NP / dist
+
+    # if dist=0, random_point == nearest_node.pos -> return to get new random point
+    if dist == 0: return None
+    else: t = RAD_NP / dist
+
+    # if dist random point to nearest node is less than RAD_NP, set new point to random point
     if (t < 0) or (t > 1):
         new_point = random_point
     else:
         new_point = pos_nearest_node.T + t*(random_point.T - pos_nearest_node.T)
-
-    if new_point[2] < 0.1:
-        new_point[2] = 0.1
     
     return new_point
 
@@ -319,34 +292,6 @@ def connectTrees(trees):
             if dist < MIN_DIST_TREE_CONNECT:
                 if collisionCheck(node_s.getNpCoordinates(), node_e.getNpCoordinates()):
                     trees['connections'].append([node_s, node_e, dist])
-
-# def findShortestPath(trees):
-#     shortest_path = []
-#     shortest_path_length = np.Inf
-
-#     for bridge in trees['connections']:
-#         node_s, node_e, bridge_length = bridge
-
-#         if node_s.min_path_length + node_e.min_path_length + bridge_length < shortest_path_length:
-#             path = [[node_s.getTupleCoordinates(), node_e.getTupleCoordinates()]]
-#             curr_node = node_s
-#             while(curr_node != trees['start'][START_POINT]):
-#                 pred = curr_node.predecessor
-#                 path.append([curr_node.getTupleCoordinates(), pred.getTupleCoordinates()])
-#                 curr_node = pred
-#             path.append([curr_node.getTupleCoordinates(), START_POINT])
-
-#             curr_node = node_e
-#             while(curr_node != trees['end'][END_POINT]):
-#                 pred = curr_node.predecessor
-#                 path.append([curr_node.getTupleCoordinates(), pred.getTupleCoordinates()])
-#                 curr_node = pred
-#             path.append([curr_node.getTupleCoordinates(), END_POINT])
-
-#             shortest_path = path
-#             shortest_path_length = node_s.min_path_length + node_e.min_path_length + bridge_length
-
-#     return shortest_path
                     
 def returnPartialPath(node, end):
     if node.getTupleCoordinates() == end:
@@ -375,45 +320,14 @@ def findShortestPath(trees):
     end_path = returnPartialPath(best_connection[1], END_POINT)
     combined_list = start_path + list(reversed(end_path))
     return combined_list
-
-def SteerRandomPoints(trees, current_tree):
-    head_nodes_end = []
-    for node_pos, node in trees['end'].items():
-        if node.successor == None:
-            head_nodes_end.append(node)
-
-    head_nodes_start = []
-    for node_pos, node in trees['start'].items():
-        if node.successor == None:
-            head_nodes_start.append(node)
     
-    for end_node in head_nodes_end:
-        for start_node in head_nodes_start:
-            end_node_pos = end_node.getNpCoordinates()
-            start_node_pos = start_node.getNpCoordinates()
-
-            if collisionCheck(end_node_pos, start_node_pos):
-                if current_tree == 'start':
-                    return end_node_pos
-                else:
-                    return start_node_pos
-    if current_tree == 'start':
-        random_end_node = random_choice(head_nodes_end)
-        return random_end_node.getNpCoordinates()    
-    else:     
-        random_start_node = random_choice(head_nodes_start)
-        return random_start_node.getNpCoordinates()  
-    
-
-def RRT(N = 1200):
-    # Store tree with start as origin and tree with end as origin,
-    # plus connections between the two trees
+def RRT(N = 1500):
+    # Store tree with start as origin and tree with end as origin, plus connections between the two trees
     trees = {
         'start' : {START_POINT: Vertex(START_POINT)},
         'end' : {END_POINT: Vertex(END_POINT)},
         'connections' : []
     }
-
 
     total_iterations = 500
     num_segments = 20
@@ -424,28 +338,32 @@ def RRT(N = 1200):
             print("Iteration: ", i)
 
         # Switch between trees every iteration (alternate expansion)
-        if i%2 : current_tree = 'start'
-        else: current_tree = 'end'
-
-        # current_segment = i // segment_length + 1
-        # if i % (segment_length // current_segment) == 0:
-        #     random_point = SteerRandomPoints(trees, current_tree)
-        # else:
-        #     x = round(random.uniform(X_BOUNDS[0], X_BOUNDS[1]),1)
-        #     y = round(random.uniform(Y_BOUNDS[0], Y_BOUNDS[1]),1)
-        #     z = round(random.uniform(Z_BOUNDS[0], Z_BOUNDS[1]),1)
-        #     random_point = np.array([x,y,z])
-
-        x = round(random.uniform(X_BOUNDS[0], X_BOUNDS[1]),1)
-        y = round(random.uniform(Y_BOUNDS[0], Y_BOUNDS[1]),1)
-        z = round(random.uniform(Z_BOUNDS[0], Z_BOUNDS[1]),1)
-        random_point = np.array([x,y,z])
+        if i%2 : 
+            current_tree = 'start'
+            if i%19==0:
+                random_point = random.choice(list(trees['end'].values())).getNpCoordinates()
+            else:
+                x = round(random.uniform(X_BOUNDS[0], X_BOUNDS[1]),1)
+                y = round(random.uniform(Y_BOUNDS[0], Y_BOUNDS[1]),1)
+                z = round(random.uniform(Z_BOUNDS[0], Z_BOUNDS[1]),1)
+                random_point = np.array([x,y,z])
+        else: 
+            current_tree = 'end'
+            if i%20==0:
+                random_point = random.choice(list(trees['start'].values())).getNpCoordinates()
+            else:
+                x = round(random.uniform(X_BOUNDS[0], X_BOUNDS[1]),1)
+                y = round(random.uniform(Y_BOUNDS[0], Y_BOUNDS[1]),1)
+                z = round(random.uniform(Z_BOUNDS[0], Z_BOUNDS[1]),1)
+                random_point = np.array([x,y,z])
 
         # Find nearest node to random point in current tree (Nearest)
         nearest_node = findNearestNode(random_point, trees[current_tree])
 
         # Find new point for current tree (Steer)
         new_point = findNewPoint(random_point, nearest_node)
+        if new_point is None:
+            continue
 
         # Add new_point to tree and find its neighbours
         neighbours, new_node = addNewPoint(new_point, trees[current_tree])
@@ -460,11 +378,25 @@ def RRT(N = 1200):
 
     return trees
 
-def generate_waypoints(waypoints, num_steps):
+# def generate_waypoints(waypoints, num_steps):
+#     WAYPOINTS = []
+#     for i in range(len(waypoints) - 1):
+#         start = np.array(list(waypoints[i]))
+#         end = np.array(list(waypoints[i + 1]))
+
+#         interpolated_points = [start + i * (end - start) / (num_steps + 1) for i in range(1, num_steps + 1)]
+
+#         WAYPOINTS.extend(interpolated_points)
+
+#     return np.array(WAYPOINTS)
+
+def generate_waypoints2(waypoints, step_length):
     WAYPOINTS = []
     for i in range(len(waypoints) - 1):
         start = np.array(list(waypoints[i]))
         end = np.array(list(waypoints[i + 1]))
+
+        num_steps = int(euclideanDistance(start, end) / step_length)
 
         interpolated_points = [start + i * (end - start) / (num_steps + 1) for i in range(1, num_steps + 1)]
 
@@ -515,13 +447,15 @@ num_edges = len(waypoints)-1
 INIT_XYZS = np.array([waypoints[0]])
 INIT_RPYS = np.array([[0,0,0]])
 
-totPathLen = calcTotalPathLength(waypoints)
-NUM_WP = int(totPathLen // 0.006)
+# totPathLen = calcTotalPathLength(waypoints)
+WAYPOINTS = generate_waypoints2(waypoints, 0.006)
+NUM_WP = len(WAYPOINTS)
+# NUM_WP = int(totPathLen // 0.006)
 PERIOD = NUM_WP // control_freq_hz
 DEFAULT_DURATION_SEC = PERIOD
 
 # WAYPOINTS = generate_waypoints(waypoints, NUM_WP//num_edges)
-WAYPOINTS = smoothenPath(path, NUM_WP)
+# WAYPOINTS = smoothenPath(path, NUM_WP)
 TARGET_POS = WAYPOINTS
 wp_counters = np.array([int((i*NUM_WP/6)%NUM_WP) for i in range(num_drones)])
 
@@ -605,8 +539,8 @@ def run(
     camera_yaw = 0
     camera_pitch = 30
 
-    prev_point = WAYPOINTS[0]
-    for point in WAYPOINTS[1:]:
+    prev_point = waypoints[0]
+    for point in waypoints[1:]:
         line_id = p.addUserDebugLine(lineFromXYZ=prev_point, lineToXYZ=point, lineColorRGB=[1, 0, 0], physicsClientId=PYB_CLIENT)
         prev_point = point
 

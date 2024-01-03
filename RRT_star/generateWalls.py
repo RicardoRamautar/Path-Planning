@@ -55,7 +55,7 @@ end_position = [removed_positions[-1][0], removed_positions[-1][1] + 1, removed_
 
 x_bounds = [0,width*2*radius-radius]
 y_bounds = [-2,nr*spacing_walls]
-z_bounds = [0,height*2*radius-radius]
+z_bounds = [0.1,height*2*radius-radius]
 
 data = {'obstacles': sphere_positions,
         'start': start_position,
