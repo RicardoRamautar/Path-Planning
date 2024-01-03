@@ -347,6 +347,20 @@ def generate_waypoints(waypoints, num_steps):
 
     return np.array(WAYPOINTS)
 
+def generate_waypoints2(waypoints, step_length):
+    WAYPOINTS = []
+    for i in range(len(waypoints) - 1):
+        start = np.array(list(waypoints[i]))
+        end = np.array(list(waypoints[i + 1]))
+
+        num_steps = int(euclideanDistance(start, end) / step_length)
+
+        interpolated_points = [start + i * (end - start) / (num_steps + 1) for i in range(1, num_steps + 1)]
+
+        WAYPOINTS.extend(interpolated_points)
+
+    return np.array(WAYPOINTS)
+
 def calcTotalPathLength(path):
     return sum([math.sqrt((path[i][0]-path[i-1][0])**2 + 
                     (path[i][1]-path[i-1][1])**2 + 
@@ -391,13 +405,14 @@ INIT_XYZS = np.array([waypoints[0]])
 INIT_RPYS = np.array([[0,0,0]])
 
 totPathLen = calcTotalPathLength(waypoints)
+WAYPOINTS = generate_waypoints2(waypoints, 0.004)
+NUM_WP = len(WAYPOINTS)
 # NUM_WP = int(totPathLen // 0.006)
-NUM_WP = int(totPathLen // 0.004)
 PERIOD = NUM_WP // control_freq_hz
 DEFAULT_DURATION_SEC = PERIOD
 
-WAYPOINTS = generate_waypoints(waypoints, NUM_WP//num_edges)
-# WAYPOINTS = smoothenPath(path, NUM_WP)
+# WAYPOINTS = generate_waypoints(waypoints, NUM_WP//num_edges)
+# # WAYPOINTS = smoothenPath(path, NUM_WP)
 TARGET_POS = WAYPOINTS
 wp_counters = np.array([int((i*NUM_WP/6)%NUM_WP) for i in range(num_drones)])
 
