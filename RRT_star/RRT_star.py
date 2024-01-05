@@ -392,19 +392,6 @@ def calcTotalPathLength(path):
                     (path[i][2]-path[i-1][2])**2)
                     for i in range(1,len(path))])
 
-def smoothenPath(path, N):
-    x = [path[i][0] for i in range(len(path))]
-    y = [path[i][1] for i in range(len(path))]
-    z = [path[i][2] for i in range(len(path))]
-
-    tck, u = splprep([x, y, z], s=0, k=2)
-
-    u_fine = np.linspace(0, 1, N)
-    x_smooth, y_smooth, z_smooth = splev(u_fine, tck)
-
-    smoothed_path = np.vstack((x_smooth, y_smooth, z_smooth)).T.astype(np.float32)
-    return smoothed_path
-
 ######### RUN RRT* #########
 start_time = time.time()
 states = RRT()

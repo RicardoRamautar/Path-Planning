@@ -224,7 +224,7 @@ def findNearestNode(random_point, tree):
 def findNewPoint(random_point, nearest_node):
     '''Finds the point on the line connecting the random point and nearest node
        a distance RAD_NP away from the nearest node
-       '''
+    '''
     pos_nearest_node = nearest_node.getNpCoordinates()
 
     dist = euclideanDistance(random_point, pos_nearest_node)
