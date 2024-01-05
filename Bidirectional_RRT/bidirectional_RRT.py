@@ -35,6 +35,8 @@ DEFAULT_DURATION_SEC = 20
 DEFAULT_OUTPUT_FOLDER = 'results'
 DEFAULT_COLAB = False
 plot_trajectory = True
+control_freq_hz=DEFAULT_CONTROL_FREQ_HZ
+num_drones=DEFAULT_NUM_DRONES
 
 ######### LOAD MAP #########
 f = open(ENVIRONMENT)
@@ -42,19 +44,18 @@ data = json.load(f)
 SPHERES = data['obstacles']
 start_point = data['start']
 end_point = data['end']
+############################
 
 ######### GLOBAL VARIABLES #########
-START_POINT = tuple(start_point)
-END_POINT = tuple(end_point)
+START_POINT = tuple(start_point)        # start point of drone
+END_POINT = tuple(end_point)            # end point of drone
 
-N = 700                     # Number of iterations
-X_BOUNDS = data['xbounds']
-Y_BOUNDS = data['ybounds']
-Z_BOUNDS = data['zbounds']
+X_BOUNDS = data['xbounds']              # min and max x-coordinate of drone
+Y_BOUNDS = data['ybounds']              # min and max y-coordinate of drone
+Z_BOUNDS = data['zbounds']              # min and max z-coordinate of drone
 
-MIN_DIST_TREE_CONNECT = 1.5
-TREE_CONVERGENCE = False
-DIST_TREE_CONVERGENCE = 2       # Distance between trees after which bidirectionality turns off
+MAX_DIST_TREE_CONNECT = 1.5             # maximum distance between nodes of opposite trees for which connection is possibles
+####################################
 
 ######### KD-tree #########
 class kdtree:
@@ -65,6 +66,9 @@ class kdtree:
         self.depth = depth
 
     def findNodesinRange(self, min_cor, max_cor):
+        '''Receives minimum and maximum x,y,z coordinates out of two points and returns all 
+           obstacles that intersect this cube, since they potentially result in a collision
+        '''
         if self is None:
             return []
 
@@ -73,14 +77,17 @@ class kdtree:
 
         nodes_in_range = []
 
+        # Checks if self (an obstacles) is inside cube of interests
         if ((x_min - RAD_OBST) <= self.pos['x'] <= (x_max + RAD_OBST) and
             (y_min - RAD_OBST) <= self.pos['y'] <= (y_max + RAD_OBST) and
             (z_min - RAD_OBST) <= self.pos['z'] <= (z_max + RAD_OBST)):
             nodes_in_range.append(self.getCoordinates())
 
+        # In this KD-tree, depth=0 splits based on x-coordinate, depth=1 splits on y, depth=2 splits on z, this repeats
         axis = self.depth % 3
         key = 'xyz'[axis]
 
+        # Decision: move left in tree and/or move right in tree
         if self.pos[key] + RAD_OBST >= min_cor[axis]:
             nodes_in_range.extend(self.left.findNodesinRange(min_cor, max_cor) if self.left else [])
 
@@ -90,6 +97,8 @@ class kdtree:
         return nodes_in_range
 
     def addNode(self, _x, _y, _z):
+        '''Adds an obstacle to the KD-tree based on its x,y,z coordinate'''
+        # Checks which coordinate to split on
         k = self.depth % 3
         if k == 0:
             key = 'x'
@@ -98,6 +107,7 @@ class kdtree:
         else:
             key = 'z'
 
+        # Sort the obstacle in the trees
         if self.pos[key] >= (_x, _y, _z)[k]:
             if self.left is None:
                 self.left = kdtree(_x, _y, _z, self.depth + 1)
@@ -110,19 +120,23 @@ class kdtree:
                 self.right.addNode(_x, _y, _z)
 
     def addNodeBatch(self, positions):
+        '''Adds an array of obstacles'''
         for pos in positions:
             self.addNode(pos[0], pos[1], pos[2])
 
     def getCoordinates(self):
+        '''Returns x,y,z coordinate of obstacle'''
         return [self.pos['x'],self.pos['y'],self.pos['z']]
 
 def build_kdtree(points, depth=0):
+    '''Builds the KD-tree such that it is more or less balanced'''
     if not points:
         return None
 
+    # Check which coordinate to split on
     k = depth % 3
-    axis = 'xyz'[k]
 
+    # Sort points based on decision coordinate and set median as split condition
     points.sort(key=lambda point: point[k])
     median_index = len(points) // 2
     median_point = points[median_index]
@@ -171,13 +185,13 @@ def plotTrees(trees, path):
     plt.show()
 
 
-######### LOGIC #########
+######### Bidirectional RRT* Logic #########
 class Vertex:
     def __init__(self, position, pred=None, dist=0):
         self.x, self.y, self.z = position
         self.predecessor = pred
-        self.min_path_length = dist        # Distance along path from source to vertex
-        self.successor = None
+        self.min_path_length = dist        # Distance along shortest path from source to vertex
+        # self.successor = None
 
     def addPredecessor(self, pred):
         self.predecessor.append(pred)
@@ -189,11 +203,13 @@ class Vertex:
         return (self.x, self.y, self.z)
     
 def euclideanDistance(pointA, pointB):
+    '''Returns euclidean distance between provided points'''
     return np.sqrt((pointA[0]-pointB[0])**2 + 
                    (pointA[1]-pointB[1])**2 + 
                    (pointA[2]-pointB[2])**2)
     
 def findNearestNode(random_point, tree):
+    '''Finds nearest node in tree to the random point'''
     nearest_node = None
     min_dist = np.Inf
 
@@ -207,6 +223,9 @@ def findNearestNode(random_point, tree):
     return nearest_node
     
 def findNewPoint(random_point, nearest_node):
+    '''Finds the point on the line connecting the random point and nearest node
+       a distance RAD_NP away from the nearest node
+       '''
     pos_nearest_node = nearest_node.getNpCoordinates()
 
     dist = euclideanDistance(random_point, pos_nearest_node)
@@ -224,6 +243,10 @@ def findNewPoint(random_point, nearest_node):
     return new_point
 
 def distPoint2Line(A,B,C):
+    '''Given three points A,B,C, it determines whether point C is less than a distance
+       RAD_OBST away from the line AB to check whether obstacle (sphere) with center C
+       will intersect this line
+    '''
     AB = B.T - A.T
     AC = C - A
 
@@ -238,27 +261,39 @@ def distPoint2Line(A,B,C):
     return (np.linalg.norm(np.cross(AB,AC)) / np.linalg.norm(AB))  > RAD_OBST
 
 def collisionCheck(pointA, pointB):
+    '''Checks for collisions when moving along line segment from pointA to pointB'''
+    # Find minimum and maximum x,y,z coordinates out of pointA and pointB
     min_cor = [min(pointA[i],pointB[i]) for i in range(3)]
     max_cor = [max(pointA[i],pointB[i]) for i in range(3)]
 
+    # Find all obstacles that could potentially cause a collision
     potentialCollisionSpheres = ROOT.findNodesinRange(min_cor, max_cor)
 
+    # Check for collisions out of all potential collision obstacles
     for sphere in potentialCollisionSpheres:
         if distPoint2Line(pointA, pointB, sphere) == False:
             return False
     return True
 
 def addNewPoint(new_point, tree):
+    '''Adds a new point to  the tree and returns all neighbours of the new point'''
     neighbours = {}
     min_path_length = np.Inf
     predecessor = None
 
+    # Iterate through all nodes in the tree
     for node in tree.values():
         node_pos = node.getNpCoordinates()
+
+        # Check if node can be a neighbour of the new point
+        edge_length = euclideanDistance(new_point, node_pos)
+        if edge_length >= RAD_NBR:
+            continue
+
+        # Check if connection between node and new point is possible
         if not collisionCheck(node_pos, new_point):
             continue
         
-        edge_length = euclideanDistance(new_point, node_pos)
         path_length = node.min_path_length + edge_length
 
         if edge_length < RAD_NBR:
@@ -271,13 +306,16 @@ def addNewPoint(new_point, tree):
     if not neighbours:
         return None, None
 
+    # Add new point to the tree and connect it to the node resulting in the smallest path to the source out of all neighbours
     new_node = Vertex(new_point, predecessor, min_path_length)
     tree[tuple(new_point)] = new_node
-    tree[predecessor.getTupleCoordinates()].successor = new_node
 
     return neighbours, new_node
 
 def updateNeighbours(neighbours, new_node, tree):
+    '''Connects neighbours of the new point to the new point if it
+       results in a shorter path from source to the node
+    '''
     for nbr_node, edge_length in neighbours.items():
         nbr_position = nbr_node.getTupleCoordinates()
         if (new_node.min_path_length + edge_length) < nbr_node.min_path_length:
@@ -285,15 +323,17 @@ def updateNeighbours(neighbours, new_node, tree):
             tree[nbr_position].min_path_length = new_node.min_path_length + edge_length
 
 def connectTrees(trees):
+    '''Finds connections between the two trees'''
     for node_pos_s, node_s in trees['start'].items():
         for node_pos_e, node_e in trees['end'].items():
             dist = euclideanDistance(node_pos_e, node_pos_s)
 
-            if dist < MIN_DIST_TREE_CONNECT:
+            if dist < MAX_DIST_TREE_CONNECT:
                 if collisionCheck(node_s.getNpCoordinates(), node_e.getNpCoordinates()):
                     trees['connections'].append([node_s, node_e, dist])
                     
 def returnPartialPath(node, end):
+    '''Returns one half of the path from start to end'''
     if node.getTupleCoordinates() == end:
         return [end]
     
@@ -303,6 +343,9 @@ def returnPartialPath(node, end):
     return path
 
 def getBestConnection(trees):
+    '''Finds connection between the two trees resulting in the shortest path
+       from start to end
+    '''
     assert trees['connections'], "No connection possible!"
 
     best_connection = None
@@ -315,6 +358,7 @@ def getBestConnection(trees):
     return best_connection
 
 def findShortestPath(trees):
+    '''Finds shortest path given the two trees'''
     best_connection = getBestConnection(trees)
     start_path = returnPartialPath(best_connection[0], START_POINT)
     end_path = returnPartialPath(best_connection[1], END_POINT)
@@ -322,6 +366,7 @@ def findShortestPath(trees):
     return combined_list
     
 def RRT(N = 1500):
+    '''Implements the bidirectional RRT* algorithm'''
     # Store tree with start as origin and tree with end as origin, plus connections between the two trees
     trees = {
         'start' : {START_POINT: Vertex(START_POINT)},
@@ -340,6 +385,7 @@ def RRT(N = 1500):
         # Switch between trees every iteration (alternate expansion)
         if i%2 : 
             current_tree = 'start'
+            # Implements directionality by sometimes taking random point equal to a node from the opposite tree
             if i%19==0:
                 random_point = random.choice(list(trees['end'].values())).getNpCoordinates()
             else:
@@ -349,6 +395,7 @@ def RRT(N = 1500):
                 random_point = np.array([x,y,z])
         else: 
             current_tree = 'end'
+            # Implements directionality by sometimes taking random point equal to a node from the opposite tree
             if i%20==0:
                 random_point = random.choice(list(trees['start'].values())).getNpCoordinates()
             else:
@@ -378,19 +425,7 @@ def RRT(N = 1500):
 
     return trees
 
-# def generate_waypoints(waypoints, num_steps):
-#     WAYPOINTS = []
-#     for i in range(len(waypoints) - 1):
-#         start = np.array(list(waypoints[i]))
-#         end = np.array(list(waypoints[i + 1]))
-
-#         interpolated_points = [start + i * (end - start) / (num_steps + 1) for i in range(1, num_steps + 1)]
-
-#         WAYPOINTS.extend(interpolated_points)
-
-#     return np.array(WAYPOINTS)
-
-def generate_waypoints2(waypoints, step_length):
+def generate_waypoints(waypoints, step_length):
     WAYPOINTS = []
     for i in range(len(waypoints) - 1):
         start = np.array(list(waypoints[i]))
@@ -424,38 +459,29 @@ def smoothenPath(path, N):
     smoothed_path = np.vstack((x_smooth, y_smooth, z_smooth)).T.astype(np.float32)
     return smoothed_path
 
-################# AUTOMATE VARS #################
-control_freq_hz=DEFAULT_CONTROL_FREQ_HZ
-num_drones=DEFAULT_NUM_DRONES
-
 ######### RUN RRT* #########
 start_time = time.time()
 states = RRT()
 end_time = time.time()
-print("Runtime: ", end_time - start_time)
+print("Runtime Bidirectional RRT*: ", end_time - start_time)
 plotTrees(states, [])
 
 path = findShortestPath(states)
+print('Shortest path: ', path)
 
 plotTrees(states, path)
 
-# path = generatePath()
-print(path)
 waypoints = np.array([[path[i][0], path[i][1], path[i][2]] for i in range(len(path))])
 waypoints = path
 num_edges = len(waypoints)-1
 INIT_XYZS = np.array([waypoints[0]])
 INIT_RPYS = np.array([[0,0,0]])
 
-# totPathLen = calcTotalPathLength(waypoints)
-WAYPOINTS = generate_waypoints2(waypoints, 0.006)
+WAYPOINTS = generate_waypoints(waypoints, 0.006)
 NUM_WP = len(WAYPOINTS)
-# NUM_WP = int(totPathLen // 0.006)
 PERIOD = NUM_WP // control_freq_hz
 DEFAULT_DURATION_SEC = PERIOD
 
-# WAYPOINTS = generate_waypoints(waypoints, NUM_WP//num_edges)
-# WAYPOINTS = smoothenPath(path, NUM_WP)
 TARGET_POS = WAYPOINTS
 wp_counters = np.array([int((i*NUM_WP/6)%NUM_WP) for i in range(num_drones)])
 
@@ -463,24 +489,6 @@ ax = plt.figure().add_subplot(projection='3d')
 ax.scatter(TARGET_POS[:,0], TARGET_POS[:,1], TARGET_POS[:,2])
 plt.show()
 ################# AUTOMATE VARS #################
-
-# plt.figure()
-# ax = plt.gca()
-# for obst in SPHERES:
-#     circle = plt.Circle((obst[0], obst[1]), RAD_OBST, color='b')
-#     ax.add_patch(circle)
-# for c, v in vertices.items():
-#     pred = v.predecessor
-#     c_pred = pred.getCoordinates()
-#     if any(np.array_equal(v.getCoordinates(), row) for row in path):
-#         plt.plot([c[0], c_pred[0]], [c[1], c_pred[1]], color='r') 
-#         plt.scatter(c[0], c[1], color='r')    
-#     else: 
-#         plt.plot([c[0], c_pred[0]], [c[1], c_pred[1]], color='k') 
-#         plt.scatter(c[0], c[1], color='k')
-# plt.scatter(start_point[0], start_point[1], color='green', s=120)
-# plt.scatter(end_point[0], end_point[1], color='green', s=120)
-# plt.show()
 
 def run(
         drone=DEFAULT_DRONES,
@@ -497,7 +505,7 @@ def run(
         output_folder=DEFAULT_OUTPUT_FOLDER,
         colab=DEFAULT_COLAB
         ):
-
+    
     #### Create the environment ################################
     env = CtrlBRRT(drone_model=drone,
                         num_drones=num_drones,
@@ -584,7 +592,7 @@ def run(
 
     #### Save the simulation results ###########################
     logger.save()
-    logger.save_as_csv("pid") # Optional CSV save
+    # logger.save_as_csv("pid") # Optional CSV save
 
     #### Plot the simulation results ###########################
     if plot:
