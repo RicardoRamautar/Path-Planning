@@ -191,7 +191,6 @@ class Vertex:
         self.x, self.y, self.z = position
         self.predecessor = pred
         self.min_path_length = dist        # Distance along shortest path from source to vertex
-        # self.successor = None
 
     def addPredecessor(self, pred):
         self.predecessor.append(pred)
