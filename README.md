@@ -1,6 +1,6 @@
 ## Installation
 First install gym-pybullet-drones and create the drones environment
-```
+```shell
 git clone https://github.com/utiasDSL/gym-pybullet-drones.git
 cd gym-pybullet-drones/
 
@@ -12,7 +12,7 @@ pip3 install -e .
 ```
 
 Once gym-pybullet-drones has been installed, install the regular and Bidirectional RRT* algorithms that we wrote ourselves as follows
-```
+```shell
 cd gym_pybullet_drones/examples/
 
 git clone https://github.com/RicardoRamautar/final_pdm.git
