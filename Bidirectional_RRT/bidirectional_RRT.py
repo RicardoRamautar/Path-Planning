@@ -364,7 +364,7 @@ def findShortestPath(trees):
     combined_list = start_path + list(reversed(end_path))
     return combined_list
     
-def RRT(N = 1500):
+def RRT(N = 3000):
     '''Implements the bidirectional RRT* algorithm'''
     # Store tree with start as origin and tree with end as origin, plus connections between the two trees
     trees = {
@@ -444,31 +444,17 @@ def calcTotalPathLength(path):
                     (path[i][2]-path[i-1][2])**2)
                     for i in range(1,len(path))])
 
-def smoothenPath(path, N):
-    x = [path[i][0] for i in range(len(path))]
-    y = [path[i][1] for i in range(len(path))]
-    z = [path[i][2] for i in range(len(path))]
-
-    tck, u = splprep([x, y, z], s=0, k=2)
-
-    u_fine = np.linspace(0, 1, N)
-    x_smooth, y_smooth, z_smooth = splev(u_fine, tck)
-
-    # original_path = np.vstack((x, y, z)).T.astype(np.float32)
-    smoothed_path = np.vstack((x_smooth, y_smooth, z_smooth)).T.astype(np.float32)
-    return smoothed_path
-
 ######### RUN RRT* #########
 start_time = time.time()
 states = RRT()
 end_time = time.time()
 print("Runtime Bidirectional RRT*: ", end_time - start_time)
-plotTrees(states, [])
+# plotTrees(states, [])
 
 path = findShortestPath(states)
 print('Shortest path: ', path)
 
-plotTrees(states, path)
+# plotTrees(states, path)
 
 waypoints = np.array([[path[i][0], path[i][1], path[i][2]] for i in range(len(path))])
 waypoints = path
@@ -544,7 +530,7 @@ def run(
     DRONE_IDS = env.getDroneIds()
     camera_distance = 1
     camera_yaw = 0
-    camera_pitch = 30
+    camera_pitch = -30
 
     prev_point = waypoints[0]
     for point in waypoints[1:]:

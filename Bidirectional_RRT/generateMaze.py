@@ -7,6 +7,7 @@ import time
 import json
 import os
 from variables import RAD_QUAD, RAD_SPHERE
+from create_urdf import create_urdf_file
 
 HEIGHT = 4
 SIZE = 15
@@ -102,10 +103,10 @@ maze_layout["ybounds"] = ybound
 maze_layout["zbounds"] = zbound
 
 current_file_directory = os.path.dirname(os.path.abspath(__file__))
-print(current_file_directory)
+path = current_file_directory + "/random_maze.json"
+spheres_path = current_file_directory + "/spheres_random_maze.urdf"
 
-# path = os.path.join(current_file_directory, "/maze.json")
-path = current_file_directory + "/maze.json"
+create_urdf_file(maze_layout["obstacles"], spheres_path)
 
 with open(path, "w") as fp:
     json.dump(maze_layout, fp)

@@ -2,13 +2,12 @@ import numpy as np
 import pybullet as p
 from gymnasium import spaces
 import os
-from variables import RAD_SPHERE, ENVIRONMENT
+from variables import RAD_SPHERE, ENVIRONMENT, ENVIRONMENT_SPHERES
 
 from gym_pybullet_drones.envs.BaseAviary import BaseAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics
 
 import json
-
 
 class CtrlBRRT(BaseAviary):
     """Multi-drone environment class for control applications."""
@@ -82,28 +81,7 @@ class CtrlBRRT(BaseAviary):
 
     
     def _addObstacles(self):
-        sphere_color = [1, 1, 1, 1]  # Red color in RGBA format
-
-        current_file_directory = os.path.dirname(os.path.abspath(__file__))
-
-        load_maze = current_file_directory + '/maze.json'
-        maze_data = 'maze'
-
-        load_walls = current_file_directory + '/walls.json'
-        walls_data = 'obstacles'
-
-        f = open(ENVIRONMENT)
-        data = json.load(f)
-        sphere_positions = data[walls_data]
-        num_spheres = len(sphere_positions)
-
-        for i in range(num_spheres):
-            sphere_collision_shape_id = p.createCollisionShape(shapeType=p.GEOM_SPHERE, radius=RAD_SPHERE)
-
-            sphere_visual_shape_id = p.createVisualShape(shapeType=p.GEOM_SPHERE, radius=RAD_SPHERE, rgbaColor=sphere_color)
-
-            sphere_position = sphere_positions[i]
-            sphere_body_id = p.createMultiBody(baseMass=0, baseCollisionShapeIndex=sphere_collision_shape_id, baseVisualShapeIndex=sphere_visual_shape_id, basePosition=sphere_position)
+        p.loadURDF(ENVIRONMENT_SPHERES)
 
 
     def _actionSpace(self):

@@ -339,7 +339,7 @@ def findShortestPath(tree):
     else:
         return returnPath(nearest_node, START_POINT)
     
-def RRT(N = 1100):
+def RRT(N = 3000):
     tree = {START_POINT: Vertex(START_POINT)}
 
     for i in range(N):
@@ -401,7 +401,7 @@ print("Runtime: ", end_time - start_time)
 path = findShortestPath(states)
 print("Shortest path: ", path)
 
-plotTrees(states, path)
+# plotTrees(states, path)
 
 waypoints = np.array([[path[i][0], path[i][1], path[i][2]] for i in range(len(path))])
 waypoints = path
@@ -417,9 +417,9 @@ DEFAULT_DURATION_SEC = PERIOD
 TARGET_POS = WAYPOINTS
 wp_counters = np.array([int((i*NUM_WP/6)%NUM_WP) for i in range(num_drones)])
 
-ax = plt.figure().add_subplot(projection='3d')
-ax.scatter(TARGET_POS[:,0], TARGET_POS[:,1], TARGET_POS[:,2])
-plt.show()
+# ax = plt.figure().add_subplot(projection='3d')
+# ax.scatter(TARGET_POS[:,0], TARGET_POS[:,1], TARGET_POS[:,2])
+# plt.show()
 ################# AUTOMATE VARS #################
 
 def run(

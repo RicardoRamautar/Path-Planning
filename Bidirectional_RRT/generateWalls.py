@@ -2,7 +2,8 @@ import random
 import time
 import json
 import os
-# from variables import RAD_SPHERE
+from create_urdf import create_urdf_file
+
 RAD_SPHERE = 0.12
 
 def createWall(width, height, radius, y):
@@ -65,7 +66,10 @@ data = {'obstacles': sphere_positions,
         'zbounds': z_bounds}
 
 script_dir = os.path.dirname(__file__)
-filename = os.path.join(script_dir, 'walls.json')
+filename = os.path.join(script_dir, 'random_walls.json')
+spheres_path = script_dir + "/spheres_random_walls.urdf"
+
+create_urdf_file(sphere_positions, spheres_path)
 
 with open(filename, 'w') as file:
     json.dump(data, file)
