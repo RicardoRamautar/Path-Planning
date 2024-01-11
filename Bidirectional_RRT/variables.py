@@ -23,5 +23,5 @@ load_random_walls_env = current_file_directory + '/spheres_random_walls.urdf'
 load_random_maze_env = current_file_directory + '/spheres_random_maze.urdf'
 load_random_city_env = current_file_directory + '/spheres_random_city.urdf'
 
-ENVIRONMENT = load_random_walls
-ENVIRONMENT_SPHERES = load_random_walls_env
+ENVIRONMENT = load_walls
+ENVIRONMENT_SPHERES = load_walls_env

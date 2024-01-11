@@ -20,7 +20,7 @@ from gym_pybullet_drones.control.DSLPIDControl import DSLPIDControl
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.utils import sync, str2bool
 
-DEFAULT_DRONES = DroneModel("cf2x")
+DEFAULT_DRONES = DroneModel("cf2p")
 DEFAULT_NUM_DRONES = 1
 DEFAULT_PHYSICS = Physics("pyb")
 DEFAULT_GUI = True
@@ -33,7 +33,7 @@ DEFAULT_CONTROL_FREQ_HZ = 48
 DEFAULT_DURATION_SEC = 20
 DEFAULT_OUTPUT_FOLDER = 'results'
 DEFAULT_COLAB = False
-plot_trajectory = True
+# plot_trajectory = True
 control_freq_hz=DEFAULT_CONTROL_FREQ_HZ
 num_drones=DEFAULT_NUM_DRONES
 
@@ -339,7 +339,7 @@ def findShortestPath(tree):
     else:
         return returnPath(nearest_node, START_POINT)
     
-def RRT(N = 3000):
+def RRT(N):
     tree = {START_POINT: Vertex(START_POINT)}
 
     for i in range(N):
@@ -394,7 +394,7 @@ def calcTotalPathLength(path):
 
 ######### RUN RRT* #########
 start_time = time.time()
-states = RRT()
+states = RRT(2000)
 end_time = time.time()
 print("Runtime: ", end_time - start_time)
 
@@ -457,11 +457,11 @@ def run(
     PYB_CLIENT = env.getPyBulletClient()
 
     #### Initialize the logger #################################
-    logger = Logger(logging_freq_hz=control_freq_hz,
-                    num_drones=num_drones,
-                    output_folder=output_folder,
-                    colab=colab
-                    )
+    # logger = Logger(logging_freq_hz=control_freq_hz,
+    #                 num_drones=num_drones,
+    #                 output_folder=output_folder,
+    #                 colab=colab
+    #                 )
 
     #### Initialize the controllers ############################
     if drone in [DroneModel.CF2X, DroneModel.CF2P]:
@@ -469,7 +469,7 @@ def run(
 
     #### Run the simulation ####################################
     action = np.zeros((num_drones,4))
-    drone_trajectories = [[] for _ in range(num_drones)]
+    # drone_trajectories = [[] for _ in range(num_drones)]
     START = time.time()
 
     reached_final_waypoint = False
@@ -505,12 +505,12 @@ def run(
             wp_counters[j] = wp_counters[j] + 1 if wp_counters[j] < (NUM_WP-1) else 0
 
         #### Log the simulation ####################################
-        for j in range(num_drones):
-            logger.log(drone=j,
-                       timestamp=i/env.CTRL_FREQ,
-                       state=obs[j],
-                       control=np.hstack([TARGET_POS[wp_counters[j], :], INIT_RPYS[j, :], np.zeros(6)])
-                       )
+        # for j in range(num_drones):
+        #     logger.log(drone=j,
+        #                timestamp=i/env.CTRL_FREQ,
+        #                state=obs[j],
+        #                control=np.hstack([TARGET_POS[wp_counters[j], :], INIT_RPYS[j, :], np.zeros(6)])
+        #                )
 
         #### Printout ##############################################
         env.render()
@@ -523,28 +523,28 @@ def run(
     env.close()
 
     #### Save the simulation results ###########################
-    logger.save()
+    # logger.save()
     # logger.save_as_csv("pid") # Optional CSV save
 
     #### Plot the simulation results ###########################
-    if plot:
-        logger.plot()
+    # if plot:
+    #     logger.plot()
     
     # Plot the drone trajectories
-    if plot_trajectory:
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        for traj in drone_trajectories:
-            traj = np.array(traj)
-            ax.plot(traj[:, 0], traj[:, 1], traj[:, 2])
-        start = drone_trajectories[0]
-        start = np.array(start)
-        ax.scatter(start[0],start[1],start[2], color='green')
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        ax.set_title('Drone Trajectories')
-        plt.show()
+    # if plot_trajectory:
+    #     fig = plt.figure()
+    #     ax = fig.add_subplot(111, projection='3d')
+    #     for traj in drone_trajectories:
+    #         traj = np.array(traj)
+    #         ax.plot(traj[:, 0], traj[:, 1], traj[:, 2])
+    #     start = drone_trajectories[0]
+    #     start = np.array(start)
+    #     ax.scatter(start[0],start[1],start[2], color='green')
+    #     ax.set_xlabel('X')
+    #     ax.set_ylabel('Y')
+    #     ax.set_zlabel('Z')
+    #     ax.set_title('Drone Trajectories')
+    #     plt.show()
 
 if __name__ == "__main__":
     #### Define and parse (optional) arguments for the script ##
