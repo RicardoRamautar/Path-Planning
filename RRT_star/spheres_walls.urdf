@@ -138,30 +138,6 @@
       </geometry>
     </collision>
     <visual>
-      <origin xyz="0.24 0 0.24" rpy="0 0 0" />
-      <geometry>
-        <sphere radius="0.2" />
-      </geometry>
-    </visual>
-    <collision>
-      <origin xyz="0.24 0 0.24" rpy="0 0 0" />
-      <geometry>
-        <sphere radius="0.2" />
-      </geometry>
-    </collision>
-    <visual>
-      <origin xyz="0.24 0 0.48" rpy="0 0 0" />
-      <geometry>
-        <sphere radius="0.2" />
-      </geometry>
-    </visual>
-    <collision>
-      <origin xyz="0.24 0 0.48" rpy="0 0 0" />
-      <geometry>
-        <sphere radius="0.2" />
-      </geometry>
-    </collision>
-    <visual>
       <origin xyz="0.24 0 0.72" rpy="0 0 0" />
       <geometry>
         <sphere radius="0.2" />
@@ -349,6 +325,30 @@
     </visual>
     <collision>
       <origin xyz="0.72 0 0.0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.2" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.72 0 0.24" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.2" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.72 0 0.24" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.2" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.72 0 0.48" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.2" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.72 0 0.48" rpy="0 0 0" />
       <geometry>
         <sphere radius="0.2" />
       </geometry>
@@ -2022,13 +2022,13 @@
       </geometry>
     </collision>
     <visual>
-      <origin xyz="1.68 4 0.48" rpy="0 0 0" />
+      <origin xyz="1.68 4 0.96" rpy="0 0 0" />
       <geometry>
         <sphere radius="0.2" />
       </geometry>
     </visual>
     <collision>
-      <origin xyz="1.68 4 0.48" rpy="0 0 0" />
+      <origin xyz="1.68 4 0.96" rpy="0 0 0" />
       <geometry>
         <sphere radius="0.2" />
       </geometry>
@@ -2118,13 +2118,13 @@
       </geometry>
     </collision>
     <visual>
-      <origin xyz="1.92 4 0.48" rpy="0 0 0" />
+      <origin xyz="1.92 4 0.96" rpy="0 0 0" />
       <geometry>
         <sphere radius="0.2" />
       </geometry>
     </visual>
     <collision>
-      <origin xyz="1.92 4 0.48" rpy="0 0 0" />
+      <origin xyz="1.92 4 0.96" rpy="0 0 0" />
       <geometry>
         <sphere radius="0.2" />
       </geometry>
@@ -2826,6 +2826,30 @@
       </geometry>
     </collision>
     <visual>
+      <origin xyz="0.96 8 0.72" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.2" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.96 8 0.72" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.2" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.96 8 0.96" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.2" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.96 8 0.96" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.2" />
+      </geometry>
+    </collision>
+    <visual>
       <origin xyz="0.96 8 1.2" rpy="0 0 0" />
       <geometry>
         <sphere radius="0.2" />
@@ -2845,30 +2869,6 @@
     </visual>
     <collision>
       <origin xyz="0.96 8 1.44" rpy="0 0 0" />
-      <geometry>
-        <sphere radius="0.2" />
-      </geometry>
-    </collision>
-    <visual>
-      <origin xyz="0.96 8 1.68" rpy="0 0 0" />
-      <geometry>
-        <sphere radius="0.2" />
-      </geometry>
-    </visual>
-    <collision>
-      <origin xyz="0.96 8 1.68" rpy="0 0 0" />
-      <geometry>
-        <sphere radius="0.2" />
-      </geometry>
-    </collision>
-    <visual>
-      <origin xyz="0.96 8 1.92" rpy="0 0 0" />
-      <geometry>
-        <sphere radius="0.2" />
-      </geometry>
-    </visual>
-    <collision>
-      <origin xyz="0.96 8 1.92" rpy="0 0 0" />
       <geometry>
         <sphere radius="0.2" />
       </geometry>
@@ -2922,6 +2922,30 @@
       </geometry>
     </collision>
     <visual>
+      <origin xyz="1.2 8 0.72" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.2" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="1.2 8 0.72" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.2" />
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="1.2 8 0.96" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.2" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="1.2 8 0.96" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.2" />
+      </geometry>
+    </collision>
+    <visual>
       <origin xyz="1.2 8 1.2" rpy="0 0 0" />
       <geometry>
         <sphere radius="0.2" />
@@ -2941,30 +2965,6 @@
     </visual>
     <collision>
       <origin xyz="1.2 8 1.44" rpy="0 0 0" />
-      <geometry>
-        <sphere radius="0.2" />
-      </geometry>
-    </collision>
-    <visual>
-      <origin xyz="1.2 8 1.68" rpy="0 0 0" />
-      <geometry>
-        <sphere radius="0.2" />
-      </geometry>
-    </visual>
-    <collision>
-      <origin xyz="1.2 8 1.68" rpy="0 0 0" />
-      <geometry>
-        <sphere radius="0.2" />
-      </geometry>
-    </collision>
-    <visual>
-      <origin xyz="1.2 8 1.92" rpy="0 0 0" />
-      <geometry>
-        <sphere radius="0.2" />
-      </geometry>
-    </visual>
-    <collision>
-      <origin xyz="1.2 8 1.92" rpy="0 0 0" />
       <geometry>
         <sphere radius="0.2" />
       </geometry>
