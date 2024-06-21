@@ -446,7 +446,7 @@ def calcTotalPathLength(path):
 
 ######### RUN RRT* #########
 start_time = time.time()
-states = RRT(2000)
+states = RRT(4000)
 end_time = time.time()
 print("Runtime Bidirectional RRT*: ", end_time - start_time)
 # plotTrees(states, [])
