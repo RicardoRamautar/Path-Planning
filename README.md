@@ -25,7 +25,7 @@ Once gym-pybullet-drones has been installed, install the regular and Bidirection
 ```shell
 cd gym_pybullet_drones/examples/
 
-git clone https://github.com/RicardoRamautar/final_pdm.git
+git clone https://github.com/RicardoRamautar/Path-Planning.git
 ```
 
 ## Running the code
