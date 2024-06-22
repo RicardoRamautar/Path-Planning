@@ -1,7 +1,9 @@
 ## Project
 We generated scripts to generate three random environments. One environment is designed to represent a city-like environment, one is made to represent a maze, and one environment consists of walls with small holes to go through as shown above.
 
-<img src="images/RO47005_Project_1.svg">
+<!-- <img src="images/RO47005_Project_1.svg"> -->
+<img src="images/RO47005_Project_1.svg" style="width:900px;">
+
 
 Next, we implemented the RRT* and Bidirectional RRT* algorithms from scratch and implemented them in gym-pybullet. A drone was then made to traverse each of the environments.
 <img src="images/pdm.gif">
